@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0f0c">
-<title>Paulpacs Solar — Mobile Sonar</title>
+<meta name="theme-color" content="#050807">
+<title>Paulpacs Solar — Mobile Submarine</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -17,7 +17,7 @@
     --red: #ff4d4d;
     --amber: #ffb84d;
     --cyan: #30e5ff;
-    --metal: #121815;
+    --metal: #0d1210;
     --metal-light: #1a221e;
   }
 
@@ -29,23 +29,29 @@
     font-family: 'Courier New', ui-monospace, monospace;
     color: var(--sonar);
     -webkit-font-smoothing: antialiased;
-    padding-bottom: 60px; /* space for bottom nav */
+    padding-bottom: 60px;
+  }
+
+  /* CRT scanline overlay */
+  body::after {
+    content: ''; position: fixed; inset: 0; z-index: 999; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
   }
 
   /* HEADER */
   .header {
-    text-align: center; padding: 16px 10px 10px;
+    text-align: center; padding: 14px 10px 10px;
     position: sticky; top: 0; z-index: 100;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 80%, transparent);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.95) 70%, transparent);
     backdrop-filter: blur(4px);
   }
   .header h1 {
-    margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 6px;
+    margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 6px;
     color: var(--brass-light);
     text-shadow: 0 0 4px var(--brass), 0 0 12px rgba(201,162,39,.5);
   }
   .header p {
-    margin: 4px 0 0; font-size: 8px; color: var(--sonar);
+    margin: 2px 0 0; font-size: 8px; color: var(--sonar);
     letter-spacing: 4px; font-weight: bold;
     text-shadow: 0 0 6px var(--sonar);
   }
@@ -60,83 +66,109 @@
     box-shadow: inset 0 0 8px rgba(107,255,184,.15), 0 0 8px rgba(107,255,184,.2);
   }
 
-  /* LAYOUT */
-  .grid {
-    display: flex; flex-direction: column;
-    gap: 14px; padding: 12px; max-width: 600px; margin: 0 auto;
+  /* DASHBOARD LAYOUT */
+  .dashboard {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 12px; max-width: 600px; margin: 0 auto;
   }
 
-  /* PANEL */
+  /* PANELS */
   .panel {
     position: relative;
-    background: linear-gradient(160deg, var(--metal-light) 0%, var(--metal) 40%, #080c0a 100%);
+    background: linear-gradient(160deg, var(--metal-light) 0%, var(--metal) 40%, #050807 100%);
     border: 1px solid var(--brass-dark);
     border-radius: 8px;
-    padding: 14px 12px 12px;
+    padding: 12px 10px 10px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 4px 12px rgba(0,0,0,.6);
   }
   .panel::after {
     content: ''; position: absolute; inset: 3px; border-radius: 5px;
     border: 1px solid rgba(201,162,39,.15); pointer-events: none;
   }
+  /* Rivets */
+  .panel::before {
+    content: ''; position: absolute; inset: 5px; border-radius: 6px; pointer-events: none;
+    background:
+      radial-gradient(circle at 6px 6px, #4a4a4a 1.5px, transparent 2px),
+      radial-gradient(circle at calc(100% - 6px) 6px, #4a4a4a 1.5px, transparent 2px),
+      radial-gradient(circle at 6px calc(100% - 6px), #4a4a4a 1.5px, transparent 2px),
+      radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), #4a4a4a 1.5px, transparent 2px);
+    opacity: .6;
+  }
 
   .panel-title {
     font-size: 9px; font-weight: 900; letter-spacing: 2px;
     text-transform: uppercase; margin-bottom: 10px;
-    color: var(--brass-light);
-    display: flex; align-items: center; gap: 6px;
+    color: var(--brass-light); display: flex; align-items: center; gap: 6px;
     text-shadow: 0 0 4px rgba(201,162,39,.5);
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(201,162,39,.2);
   }
-  .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    display: inline-block; box-shadow: 0 0 6px currentColor;
-    animation: pulse 2s ease-in-out infinite;
-  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px currentColor; animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 
-  /* GAUGE (Horizontal Meter Style) */
-  .gauge-row {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    margin-bottom: 4px;
-  }
-  .gauge-val {
-    font-size: 32px; font-weight: 900; line-height: 1;
-    font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-  }
-  .gauge-val small { font-size: 12px; letter-spacing: 1px; opacity: .8; }
+  /* TOP ROW GAUGES (3 columns) */
+  .gauge-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
   
-  .gauge-meta { text-align: right; font-size: 9px; letter-spacing: 1px; opacity: .8; text-transform: uppercase; }
-  .gauge-meta div:last-child { color: #eafff5; font-weight: bold; margin-top: 2px; }
+  .gauge-mini {
+    position: relative; aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 45%, #0a1812 0%, #000 75%);
+    box-shadow: inset 0 0 15px rgba(0,0,0,.9), 0 0 0 2px #0a0f0c, 0 0 0 4px var(--brass-dark), 0 0 0 5px rgba(201,162,39,.3);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px;
+  }
+  .gauge-mini svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(135deg); }
+  .gauge-mini .track { fill: none; stroke: rgba(107,255,184,.08); stroke-linecap: round; }
+  .gauge-mini .value-arc { fill: none; stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1); filter: drop-shadow(0 0 4px currentColor); }
+  
+  .gauge-mini .val { font-size: 18px; font-weight: 900; line-height: 1; z-index: 2; text-shadow: 0 0 8px currentColor; }
+  .gauge-mini .unit { font-size: 7px; opacity: .8; margin-top: 2px; z-index: 2; letter-spacing: 1px; }
+  .gauge-mini .sub { font-size: 6px; opacity: .6; margin-top: 2px; z-index: 2; text-transform: uppercase; }
 
-  .meter-track {
-    height: 18px; border-radius: 3px; background: #000; overflow: hidden; position: relative;
-    border: 1px solid var(--brass-dark); box-shadow: inset 0 0 8px rgba(0,0,0,.9);
+  /* MIDDLE ROW (Large Grid Gauge + Meters) */
+  .gauge-grid-2 { display: grid; grid-template-columns: 1fr 1.2fr; gap: 10px; }
+
+  .gauge-large {
+    position: relative; aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 45%, #0a1812 0%, #000 75%);
+    box-shadow: inset 0 0 20px rgba(0,0,0,.9), 0 0 0 3px #0a0f0c, 0 0 0 5px var(--brass-dark), 0 0 0 6px rgba(201,162,39,.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .gauge-large svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(135deg); }
+  .gauge-large .val { font-size: 26px; font-weight: 900; line-height: 1; z-index: 2; text-shadow: 0 0 10px currentColor; }
+  .gauge-large .unit { font-size: 9px; opacity: .8; margin-top: 2px; z-index: 2; letter-spacing: 2px; }
+  .gauge-large .sub { font-size: 8px; opacity: .6; margin-top: 4px; z-index: 2; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* METERS (Level Indicators) */
+  .level-indicators { display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  
+  .level-group { display: flex; flex-direction: column; gap: 4px; }
+  .level-label { display: flex; justify-content: space-between; font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sonar); opacity: .85; }
+  .level-value { color: #eafff5; text-shadow: 0 0 6px rgba(107,255,184,.5); }
+  
+  .level-track {
+    height: 12px; border-radius: 2px; background: #000; overflow: hidden; position: relative;
+    border: 1px solid var(--brass-dark); box-shadow: inset 0 0 6px rgba(0,0,0,.9);
     background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), rgba(201,162,39,.2) calc(10% - 1px), rgba(201,162,39,.2) 10%);
-    margin-bottom: 12px;
   }
-  .meter-fill {
+  .level-fill {
     height: 100%; width: 0%; transition: width .8s cubic-bezier(.4,0,.2,1);
-    box-shadow: 0 0 10px currentColor, inset 0 0 8px rgba(255,255,255,.3);
-    position: relative;
+    box-shadow: 0 0 8px currentColor, inset 0 0 6px rgba(255,255,255,.3);
   }
-  .meter-fill::after {
+  .level-fill::after {
     content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(90deg, transparent 0, transparent 3px, rgba(0,0,0,.25) 3px, rgba(0,0,0,.25) 4px);
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,.3) 2px, rgba(0,0,0,.3) 3px);
   }
 
   /* STATS */
-  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .stats.two-col { grid-template-columns: 1fr 1fr; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
   .stat {
     background: rgba(0,0,0,.6); border: 1px solid rgba(107,255,184,.12);
     border-radius: 4px; padding: 6px 8px;
   }
-  .stat .k { font-size: 7px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .55; color: var(--sonar); }
-  .stat .v { font-size: 14px; font-weight: 900; margin-top: 2px; font-variant-numeric: tabular-nums; color: #eafff5; text-shadow: 0 0 6px rgba(107,255,184,.4); }
-  .stat .v small { font-size: 9px; font-weight: bold; opacity: .7; }
+  .stat .k { font-size: 7px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .55; }
+  .stat .v { font-size: 13px; font-weight: 900; margin-top: 2px; font-variant-numeric: tabular-nums; color: #eafff5; text-shadow: 0 0 6px rgba(107,255,184,.4); }
+  .stat .v small { font-size: 8px; font-weight: bold; opacity: .7; }
 
   .status-on   { color: #6bffb8 !important; }
   .status-off  { color: #ff4d4d !important; text-shadow: 0 0 6px #ff4d4d !important; }
@@ -147,33 +179,26 @@
   .chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .chart-head .panel-title { margin: 0; border: none; padding: 0; }
   .legend { display: flex; gap: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 7px; font-weight: 800; letter-spacing: 1px; color: var(--sonar); }
+  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 7px; font-weight: 800; letter-spacing: 1px; }
   .legend-swatch { width: 8px; height: 3px; border-radius: 1px; box-shadow: 0 0 4px currentColor; }
   
   .chart-wrapper {
-    position: relative; height: 200px; width: 100%;
+    position: relative; height: 160px; width: 100%;
     border: 1px solid rgba(107,255,184,.2); border-radius: 4px;
     background: linear-gradient(rgba(107,255,184,.04) 1px, transparent 1px) 0 0 / 100% 25%, radial-gradient(ellipse at 50% 50%, #061a10 0%, #000 80%);
     box-shadow: inset 0 0 20px rgba(0,0,0,.9);
     overflow: hidden;
   }
-  .chart-wrapper::before {
-    content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-    background: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,.2) 2px, rgba(0,0,0,.2) 4px);
-  }
   .chart-wrapper canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
 
-  /* BOTTOM NAV (Decoration) */
+  /* BOTTOM NAV */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
     background: linear-gradient(to top, rgba(0,0,0,0.95) 80%, transparent);
     padding: 10px 0 14px; display: flex; justify-content: center; gap: 30px;
     pointer-events: none;
   }
-  .nav-item {
-    font-size: 8px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--sonar-dim); text-align: center;
-  }
+  .nav-item { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--sonar-dim); text-align: center; }
   .nav-item.active { color: var(--brass-light); text-shadow: 0 0 6px var(--brass); }
   .nav-item::before { content: '◆'; display: block; font-size: 10px; margin-bottom: 4px; }
 
@@ -183,111 +208,91 @@
 
 <div class="header">
   <h1>PAULPACS</h1>
-  <p>SOLAR HOME · MOBILE SONAR</p>
+  <p>MOBILE SUBMARINE CONSOLE</p>
   <div class="clock" id="clock">--:--:--</div>
 </div>
 
-<div class="grid">
+<div class="dashboard">
 
-  <!-- PV SYSTEM -->
+  <!-- TOP ROW: SMALL GAUGES -->
+  <div class="gauge-grid-3">
+    <!-- PV -->
+    <div class="gauge-mini">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="42" stroke-width="6" stroke-dasharray="198 264"></circle>
+        <circle class="value-arc" id="pvArc" cx="50" cy="50" r="42" stroke="#30e5ff" stroke-width="6" stroke-dasharray="198 264" stroke-dashoffset="198"></circle>
+      </svg>
+      <div class="val" style="color:#30e5ff;" id="pvPower">0</div>
+      <div class="unit">WATTS</div>
+      <div class="sub" id="pvSub">PROJ</div>
+    </div>
+    <!-- Battery -->
+    <div class="gauge-mini">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="42" stroke-width="6" stroke-dasharray="198 264"></circle>
+        <circle class="value-arc" id="socArc" cx="50" cy="50" r="42" stroke="#6bffb8" stroke-width="6" stroke-dasharray="198 264" stroke-dashoffset="198"></circle>
+      </svg>
+      <div class="val" style="color:#6bffb8;" id="soc">0</div>
+      <div class="unit">% SOC</div>
+      <div class="sub" id="socSub">IDLE</div>
+    </div>
+    <!-- Inverter -->
+    <div class="gauge-mini">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="42" stroke-width="6" stroke-dasharray="198 264"></circle>
+        <circle class="value-arc" id="invArc" cx="50" cy="50" r="42" stroke="#6bffb8" stroke-width="6" stroke-dasharray="198 264" stroke-dashoffset="198"></circle>
+      </svg>
+      <div class="val" style="color:#6bffb8;" id="invLoad">0</div>
+      <div class="unit">WATTS</div>
+      <div class="sub">INVERTER</div>
+    </div>
+  </div>
+
+  <!-- MIDDLE ROW: GRID GAUGE + METERS -->
   <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:var(--cyan);color:var(--cyan)"></span>PV SYSTEM</div>
+    <div class="panel-title"><span class="dot" style="background:#ff4d4d;color:#ff4d4d"></span>GRID & LEVELS</div>
     
-    <div class="gauge-row">
-      <div class="gauge-val" style="color:#30e5ff;">
-        <span id="pvPower">0</span> <small>W</small>
+    <div class="gauge-grid-2">
+      <!-- Large Grid Gauge -->
+      <div class="gauge-large">
+        <svg viewBox="0 0 100 100">
+          <circle class="track" cx="50" cy="50" r="42" stroke-width="6" stroke-dasharray="198 264"></circle>
+          <circle class="value-arc" id="gridArc" cx="50" cy="50" r="42" stroke="#ff4d4d" stroke-width="6" stroke-dasharray="198 264" stroke-dashoffset="198"></circle>
+        </svg>
+        <div class="val" style="color:#ff4d4d;" id="gridPowerG">0</div>
+        <div class="unit">WATTS</div>
+        <div class="sub" id="gridStatus">OFFLINE</div>
       </div>
-      <div class="gauge-meta">
-        <div>PROJECTED</div>
-        <div id="pvSub">-- W</div>
+
+      <!-- Level Indicators -->
+      <div class="level-indicators">
+        <div class="level-group">
+          <div class="level-label"><span>1ST FLOOR</span><span class="level-value" id="floor1">0 W</span></div>
+          <div class="level-track"><div class="level-fill" id="floor1Bar" style="background:#30e5ff;color:#30e5ff"></div></div>
+        </div>
+        <div class="level-group">
+          <div class="level-label"><span>2ND FLOOR</span><span class="level-value" id="floor2">0 W</span></div>
+          <div class="level-track"><div class="level-fill" id="floor2Bar" style="background:#ffb84d;color:#ffb84d"></div></div>
+        </div>
+        <div class="level-group">
+          <div class="level-label"><span>UTILISATION</span><span class="level-value" id="invPctLabel">0%</span></div>
+          <div class="level-track"><div class="level-fill" id="invBar" style="background:#6bffb8;color:#6bffb8"></div></div>
+        </div>
       </div>
-    </div>
-    
-    <div class="meter-track">
-      <div class="meter-fill" id="pvBar" style="background:#30e5ff;color:#30e5ff"></div>
     </div>
 
+    <!-- Secondary Stats -->
     <div class="stats">
-      <div class="stat"><div class="k">PV VOLT</div><div class="v"><span id="pvVolt">0</span><small> V</small></div></div>
+      <div class="stat"><div class="k">PV VOLTAGE</div><div class="v"><span id="pvVolt">0</span><small> V</small></div></div>
       <div class="stat"><div class="k">MPPT</div><div class="v status-idle" id="mppt" style="font-size:11px;">IDLE</div></div>
-      <div class="stat"><div class="k">PERF</div><div class="v"><span id="perf">0</span><small> %</small></div></div>
-    </div>
-  </div>
-
-  <!-- BATTERY -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:#6bffb8;color:#6bffb8"></span>BATTERY</div>
-    
-    <div class="gauge-row">
-      <div class="gauge-val" style="color:#6bffb8;">
-        <span id="soc">0</span> <small>%</small>
-      </div>
-      <div class="gauge-meta">
-        <div>STATE</div>
-        <div id="socSub">IDLE</div>
-      </div>
-    </div>
-    
-    <div class="meter-track">
-      <div class="meter-fill" id="socBar" style="background:#6bffb8;color:#6bffb8"></div>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><div class="k">VOLTAGE</div><div class="v"><span id="battVolt">0</span><small> V</small></div></div>
-      <div class="stat"><div class="k">CURRENT</div><div class="v"><span id="battAmps">0.0</span><small> A</small></div></div>
-      <div class="stat"><div class="k">TEMP</div><div class="v"><span id="invTemp">42.0</span><small> °C</small></div></div>
-    </div>
-  </div>
-
-  <!-- INVERTER LOAD -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" style="background:#6bffb8;color:#6bffb8"></span>INVERTER LOAD</div>
-    
-    <div class="gauge-row">
-      <div class="gauge-val" style="color:#6bffb8;">
-        <span id="invLoad">0</span> <small>W</small>
-      </div>
-      <div class="gauge-meta">
-        <div>UTILISATION</div>
-        <div id="invPctLabel">0%</div>
-      </div>
-    </div>
-    
-    <div class="meter-track">
-      <div class="meter-fill" id="invBar" style="background:#6bffb8;color:#6bffb8"></div>
-    </div>
-
-    <div class="stats two-col">
+      <div class="stat"><div class="k">BATT VOLTAGE</div><div class="v"><span id="battVolt">0</span><small> V</small></div></div>
+      <div class="stat"><div class="k">CHARGE CURRENT</div><div class="v"><span id="battAmps">0.0</span><small> A</small></div></div>
       <div class="stat"><div class="k">GRID POWER</div><div class="v"><span id="gridPower">0</span><small> W</small></div></div>
-      <div class="stat"><div class="k">GRID VOLT</div><div class="v"><span id="gridVolt">224</span><small> V</small></div></div>
+      <div class="stat"><div class="k">GRID VOLTAGE</div><div class="v"><span id="gridVolt">224</span><small> V</small></div></div>
     </div>
   </div>
 
-  <!-- GRID -->
-  <div class="panel">
-    <div class="panel-title"><span class="dot" id="gridDot" style="background:#ff4d4d;color:#ff4d4d"></span>GRID</div>
-    
-    <div class="gauge-row">
-      <div class="gauge-val" style="color:#ff4d4d;">
-        <span id="gridPowerG">0</span> <small>W</small>
-      </div>
-      <div class="gauge-meta">
-        <div>STATUS</div>
-        <div id="gridStatus">OFFLINE</div>
-      </div>
-    </div>
-    
-    <div class="meter-track">
-      <div class="meter-fill" id="gridBar" style="background:#ff4d4d;color:#ff4d4d"></div>
-    </div>
-
-    <div class="stats two-col">
-      <div class="stat"><div class="k">1ST FLOOR</div><div class="v"><span id="floor1">0</span><small> W</small></div></div>
-      <div class="stat"><div class="k">2ND FLOOR</div><div class="v"><span id="floor2">0</span><small> W</small></div></div>
-    </div>
-  </div>
-
-  <!-- FULL-WIDTH CHART -->
+  <!-- CHART PANEL -->
   <div class="panel chart-panel">
     <div class="chart-head">
       <div class="panel-title"><span class="dot" style="background:var(--sonar);color:var(--sonar)"></span>POWER SONAR</div>
@@ -306,8 +311,8 @@
 
 <div class="bottom-nav">
   <div class="nav-item active">SONAR</div>
-  <div class="nav-item">DEPTH</div>
-  <div class="nav-item">ENGINE</div>
+  <div class="nav-item">SYSTEM</div>
+  <div class="nav-item">POWER</div>
 </div>
 
 <script>
@@ -320,8 +325,18 @@ function tick() {
 }
 setInterval(tick, 1000); tick();
 
-/* ---------- CHART (Mobile Optimized) ---------- */
-const MAX_POINTS = 40;
+/* ---------- ARC GAUGE HELPER ----------
+   Small gauges: r=42, circumference ≈ 264. 75% arc = 198.
+   Large gauge:  same calculation applies. */
+function setArc(arcId, frac) {
+  const el = document.getElementById(arcId);
+  if (!el) return;
+  const f = Math.max(0, Math.min(1, frac));
+  el.style.strokeDashoffset = 198 - (198 * f);
+}
+
+/* ---------- MULTI-LINE CHART ---------- */
+const MAX_POINTS = 30; // Short history for mobile
 const series = {
   pv:   { data: [], color: '#30e5ff', fill: 'rgba(48,229,255,0.10)'  },
   inv:  { data: [], color: '#6bffb8', fill: 'rgba(107,255,184,0.10)' },
@@ -343,8 +358,7 @@ window.addEventListener('resize', resizeChart);
 function drawChart() {
   const w = chartCanvas.clientWidth;
   const h = chartCanvas.clientHeight;
-  // Smaller padding for mobile
-  const padL = 34, padR = 8, padT = 10, padB = 16;
+  const padL = 30, padR = 6, padT = 8, padB = 14;
   const plotW = w - padL - padR;
   const plotH = h - padT - padB;
 
@@ -396,7 +410,6 @@ function drawChart() {
     const xFor = i => padL + (i / (MAX_POINTS - 1)) * plotW;
     const yFor = v => padT + plotH - (Math.min(v, maxVal) / maxVal) * plotH;
 
-    // Area
     chartCtx.beginPath();
     chartCtx.moveTo(xFor(0), yFor(data[0]));
     for (let i = 1; i < data.length; i++) chartCtx.lineTo(xFor(i), yFor(data[i]));
@@ -406,39 +419,33 @@ function drawChart() {
     chartCtx.fillStyle = s.fill;
     chartCtx.fill();
 
-    // Line with glow
     chartCtx.save();
     chartCtx.shadowColor = s.color;
-    chartCtx.shadowBlur = 8;
+    chartCtx.shadowBlur = 6;
     chartCtx.beginPath();
     for (let i = 0; i < data.length; i++) {
       const x = xFor(i), y = yFor(data[i]);
       i ? chartCtx.lineTo(x, y) : chartCtx.moveTo(x, y);
     }
     chartCtx.strokeStyle = s.color;
-    chartCtx.lineWidth = 2;
+    chartCtx.lineWidth = 1.5;
     chartCtx.lineJoin = 'round';
     chartCtx.stroke();
     chartCtx.restore();
 
-    // Dot
     const lastX = xFor(data.length - 1);
     const lastY = yFor(data[data.length - 1]);
-    chartCtx.save();
-    chartCtx.shadowColor = s.color;
-    chartCtx.shadowBlur = 8;
     chartCtx.beginPath();
-    chartCtx.arc(lastX, lastY, 3, 0, Math.PI * 2);
+    chartCtx.arc(lastX, lastY, 2.5, 0, Math.PI * 2);
     chartCtx.fillStyle = s.color;
     chartCtx.fill();
-    chartCtx.restore();
   });
 
   chartCtx.fillStyle = 'rgba(107,255,184,0.5)';
   chartCtx.font = '7px "Courier New", monospace';
   chartCtx.textAlign = 'right';
   chartCtx.textBaseline = 'top';
-  chartCtx.fillText('NOW', w - padR, padT + plotH + 5);
+  chartCtx.fillText('NOW', w - padR, padT + plotH + 4);
 }
 
 function pushSample(pv, inv, grid) {
@@ -472,10 +479,9 @@ async function fetchData() {
 
     /* PV */
     document.getElementById('pvPower').textContent = Math.round(pvPower);
-    document.getElementById('pvBar').style.width = Math.min(100, (pvPower / pvMax) * 100) + '%';
+    setArc('pvArc', pvPower / pvMax);
     document.getElementById('pvVolt').textContent = pvVolt.toFixed(1);
-    document.getElementById('perf').textContent = projected > 0 ? Math.round((pvPower / projected) * 100) : 0;
-    document.getElementById('pvSub').textContent = Math.round(projected) + ' W';
+    document.getElementById('pvSub').textContent = 'PROJ ' + Math.round(projected) + ' W';
     
     const mppt = document.getElementById('mppt');
     if (pvPower === 0 && pvVolt === 0) { mppt.textContent='IDLE'; mppt.className='v status-idle'; }
@@ -484,7 +490,7 @@ async function fetchData() {
 
     /* Battery */
     document.getElementById('soc').textContent = Math.round(soc);
-    document.getElementById('socBar').style.width = soc + '%';
+    setArc('socArc', soc / socMax);
     document.getElementById('battVolt').textContent = battVolt.toFixed(2);
 
     const totalLoad = invPower + (invPower > 0 ? 100 : 0);
@@ -504,27 +510,29 @@ async function fetchData() {
 
     /* Inverter */
     document.getElementById('invLoad').textContent = Math.round(invPower);
-    document.getElementById('invBar').style.width = Math.min(100, (invPower / invMax) * 100) + '%';
-    document.getElementById('invPctLabel').textContent = Math.min(100, Math.round((invPower / invMax) * 100)) + '%';
+    setArc('invArc', invPower / invMax);
+    
+    const invPct = Math.min(100, Math.round((invPower / invMax) * 100));
+    document.getElementById('invPctLabel').textContent = invPct + '%';
+    document.getElementById('invBar').style.width = invPct + '%';
 
     /* Grid */
     document.getElementById('gridPower').textContent = Math.round(gridPower);
     document.getElementById('gridPowerG').textContent = Math.round(gridPower);
-    document.getElementById('gridBar').style.width = Math.min(100, (gridPower / gridMax) * 100) + '%';
+    setArc('gridArc', gridPower / gridMax);
     
     const gs = document.getElementById('gridStatus');
-    const gd = document.getElementById('gridDot');
     if (d.v8 === 1) {
       gs.textContent = 'ONLINE'; gs.className='sub status-on';
-      gd.style.background = '#6bffb8'; gd.style.boxShadow='0 0 6px #6bffb8';
     } else {
       gs.textContent = 'OFFLINE'; gs.className='sub status-off';
-      gd.style.background = '#ff4d4d'; gd.style.boxShadow='0 0 6px #ff4d4d';
     }
 
     /* Floors */
-    document.getElementById('floor1').textContent = Math.round(floor1);
-    document.getElementById('floor2').textContent = Math.round(floor2);
+    document.getElementById('floor1').textContent = Math.round(floor1) + ' W';
+    document.getElementById('floor2').textContent = Math.round(floor2) + ' W';
+    document.getElementById('floor1Bar').style.width = Math.min(100, (floor1 / gridMax) * 100) + '%';
+    document.getElementById('floor2Bar').style.width = Math.min(100, (floor2 / gridMax) * 100) + '%';
 
     /* Chart */
     pushSample(pvPower, invPower, gridPower);
