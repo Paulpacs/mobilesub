@@ -522,7 +522,7 @@ async function fetchData() {
     setArc('gridArc', gridPower / gridMax);
     
     const gs = document.getElementById('gridStatus');
-    if (d.v8 === 1) {
+    if (d.v8 === 0) {
       gs.textContent = 'ONLINE'; gs.className='sub status-on';
     } else {
       gs.textContent = 'OFFLINE'; gs.className='sub status-off';
